@@ -1,15 +1,16 @@
 <template>
   <a-form :form="form" @submit="handleSubmit">
     <a-form-item label="Note" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-      <a-input
+      <dyInput
         v-decorator="[
           'note',
-          {rules: [{ required: true, message: 'Please input your note!' },
-          { min: 7, message: '789465' }
+          {rules: [{ required: true, min: 7,message: 'Please input your note!' },
+          { min: 7, message: '789465' },
+          {message: '',/*validator: (r,v,cb) => {cb(2)}*/}
           ]}
         ]"
-        @change="handleChange('note')"
-      />
+        :inputOptions="{type:'text'}"
+      ></dyInput>
     </a-form-item>
     <a-form-item label="Gender" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
       <a-select
@@ -25,60 +26,66 @@
       </a-select>
     </a-form-item>
     <a-form-item :wrapper-col="{ span: 12, offset: 5 }">
-      <a-button type="primary" html-type="submit" :disabled="!isValid">Submit</a-button>
+      <a-button type="primary" html-type="submit" :disabled="!form.isValid">Submit</a-button>
     </a-form-item>
+    <a-form :form="form2" @submit="handleSubmit">
+      <a-form-item label="Note" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+        <a-input
+          v-decorator="[
+          'note',
+          {rules: [{ required: true, message: 'Please input your note!' }]}
+        ]"
+        />
+      </a-form-item>
+      <a-form-item label="Gender" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+        <a-select
+          v-decorator="[
+          'gender2',
+          {rules: [{ required: true, message: 'Please select your gender!' }]}
+        ]"
+          placeholder="Select a option and change input text above"
+        >
+          <a-select-option value="male">male</a-select-option>
+          <a-select-option value="female">female</a-select-option>
+        </a-select>
+      </a-form-item>
+    </a-form>
   </a-form>
 </template>
 
 <script>
-import { isNil } from "@/utils";
-import {formMixins} from '@/utils/mixins'
-import { Subject } from "rxjs";
-import { debounceTime } from "rxjs/operators";
-
-const changeSubject = new Subject();
+import { alterForm } from "@/utils";
+import dyInput from "../../inputs/DynamicInput.vue";
 
 export default {
-  mixins: [
-    formMixins
-  ],
   data() {
     return {
-      formLayout: "horizontal",
+      form: this.$form.createForm(this),
+      form2: this.$form.createForm(this),
+      formLayout: "horizontal"
     };
   },
   props: ["inputSet"],
-  computed: {},
-  beforeMount() {
+  components: {
+    dyInput
   },
+  computed: {},
+  beforeMount() {},
   mounted() {
-    
+    console.log(this.inputSet);
+    alterForm(this.form);
   },
   methods: {
-    handleChange(key) {
-      console.log(key, this.form);
-      // this.changeSet.add(key);
-      // changeSubject.next(this.changeSet);
-      // this.$nextTick(() => this.calValid(key))
-      // this.form.setFieldsValue({
-      //   note: `Hi, ${45 === "male" ? "man" : "lady"}!`
-      // });
-    },
     handleSubmit(e) {
       e.preventDefault();
+      console.log(this);
       this.form.validateFields((err, values) => {
         if (!err) {
           console.log("Received values of form: ", values);
         }
       });
     },
-    handleSelectChange(value) {
-      console.log(value, this.form);
-      window["form1"] = this.form;
-      //   this.form.setFieldsValue({
-      //     note: `Hi, ${value === 'male' ? 'man' : 'lady'}!`,
-      //   });
-    }
+    handleChange() {}
   }
 };
 </script>

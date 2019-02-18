@@ -2,7 +2,9 @@ import {
     Subject
 } from "rxjs";
 import {
-    debounceTime
+    debounceTime,
+    filter,
+    map
 } from "rxjs/operators";
 import {
     isNil
@@ -16,6 +18,7 @@ export const formMixins = {
             isValid: true,
             changeSet: new Set(),
             changeSubject: new Subject(),
+            valueChanges: new Subject(),
         };
     },
     beforeMount() {
@@ -32,19 +35,36 @@ export const formMixins = {
     mounted() {
         const form = this.form,
             fieldsMeta = form.fieldsStore.fieldsMeta,
-            validStaus = form.validStaus || (form.validStaus = {});
+            controls = form.controls || (form.controls = {}),
+            changeSet = this.changeSet,
+            changeSubject = this.changeSubject;
         Object.keys(fieldsMeta).forEach(i => {
             const property = i;
-            const instance = this.form.instances[property];
-            instance.$watch("value", val => {
-                this.changeSet.add(property);
-                this.changeSubject.next(this.changeSet);
+            const instance = this.form.instances[property],
+                valueChanges = this.valueChanges;
+            instance.$watch("value", (newVal, oldVal) => {
+                !changeSet.has(property) && changeSet.add(property);
+                changeSubject.next(changeSet);
+                valueChanges.next({
+                    property,
+                    params: {
+                        newVal,
+                        oldVal
+                    }
+                });
             });
+            const control = controls[property] || (controls[property] = {});
+            control.valueChanges = valueChanges.asObservable().pipe(filter((data) => data.property === property), map(({
+                params
+            }) => params));
             this.calValid(property);
-            def(validStaus, property, {
+            def(control, 'isValid', {
                 get: () => this[`${property}_isValid`]
             });
         });
+        def(form, 'isValid', {
+            get: () => this[`isValid`]
+        })
         this.calallValid();
     },
     methods: {
@@ -54,21 +74,23 @@ export const formMixins = {
             this.isValid = Object.keys(fieldsMeta).every(i => this[`${i}_isValid`]);
         },
         calValid(key) {
-            const form = this.form;
-            const instance = form.instances[key];
-            const val = instance.value;
-            const meta = form.fieldsStore.fieldsMeta[key];
-            const field = form.fieldsStore.fields[key];
-            const validKey = `${key}_isValid`;
+            const form = this.form,
+                instance = form.instances[key],
+                val = instance.value,
+                meta = form.fieldsStore.fieldsMeta[key],
+                field = form.fieldsStore.fields[key],
+                validKey = `${key}_isValid`;
+            let res;
             if (field && field.errors) {
-                this[validKey] = false;
+                res = false;
             } else {
                 if ((isNil(val) || val === "") && meta.rules.some(r => r.required)) {
-                    this[validKey] = false;
+                    res = false;
                 } else {
-                    this[validKey] = true;
+                    res = true;
                 }
             }
+            this[validKey] = res;
         },
     }
 }

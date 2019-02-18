@@ -1,4 +1,12 @@
 import * as moment from 'moment';
+import {
+  Subject
+} from "rxjs";
+import {
+  debounceTime,
+  filter,
+  map
+} from "rxjs/operators";
 
 /**
  * 对能改变数组的方法添加钩子函数
@@ -10,7 +18,7 @@ export function bindEventForArray(array, cb) {
   fun.forEach(item => {
     let _prototype = Array.prototype[item];
     let that = this;
-    array[item] = function() {
+    array[item] = function () {
       let new_value = _prototype.apply(this, arguments);
       cb();
       return new_value;
@@ -33,7 +41,7 @@ export const throttle = (
   during = 200,
 ) => {
   clearTimeout(method.tId);
-  method.tId = setTimeout(function() {
+  method.tId = setTimeout(function () {
     method.call(context, ...args);
   }, during);
   return method.tId;
@@ -200,4 +208,83 @@ export function arrayClassifyByOne(target, prop) {
     out[val].push(t);
   });
   return out;
+}
+
+const def = Object.defineProperty;
+
+const shareMethods = {
+  calallValid() {
+    const fieldsMeta = this.fieldsStore.fieldsMeta;
+    if (!fieldsMeta) return false;
+    this.isValid = Object.keys(fieldsMeta).every(i => this[`${i}_isValid`]);
+  },
+  calValid(key) {
+    const form = this,
+      instance = form.instances[key],
+      val = instance.value,
+      meta = form.fieldsStore.fieldsMeta[key],
+      field = form.fieldsStore.fields[key],
+      validKey = `${key}_isValid`;
+    let res;
+    if (field && field.errors) {
+      res = false;
+    } else {
+      if ((isNil(val) || val === "") && meta.rules.some(r => r.required)) {
+        res = false;
+      } else {
+        res = true;
+      }
+    }
+    this[validKey] = res;
+  },
+}
+export function alterForm(form) {
+  if (form && form._isVue) {
+    const changeSet = new Set(),
+      changeSubject = new Subject(),
+      valueChanges = new Subject(),
+      {
+        calallValid,
+        calValid
+      } = shareMethods;
+    changeSubject
+      .asObservable()
+      .pipe(debounceTime(300))
+      .subscribe(val => {
+        const arr = Array.from(val);
+        arr.forEach(a => calValid.call(form, a));
+        changeSet.clear();
+        calallValid.call(form);
+      });
+
+    const fieldsMeta = form.fieldsStore.fieldsMeta,
+      controls = form.controls || (form.controls = {});
+    Object.keys(fieldsMeta).forEach(i => {
+      const property = i;
+      const instance = form.instances[property];
+      instance.$watch("value", (newVal, oldVal) => {
+        !changeSet.has(property) && changeSet.add(property);
+        changeSubject.next(changeSet);
+        valueChanges.next({
+          property,
+          params: {
+            newVal,
+            oldVal
+          }
+        });
+      });
+      const control = controls[property] || (controls[property] = {});
+      control.valueChanges = valueChanges.asObservable().pipe(filter((data) => data.property === property), map(({
+        params
+      }) => params));
+      calValid.call(form, property);
+      def(control, 'isValid', {
+        get: () => form[`${property}_isValid`]
+      });
+    });
+    setTimeout(() => {
+      form.$set(form, 'isValid', true);
+      calallValid.call(form)
+    }, 500);
+  }
 }
