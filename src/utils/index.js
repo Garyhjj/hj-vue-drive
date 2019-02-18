@@ -216,7 +216,22 @@ const shareMethods = {
   calallValid() {
     const fieldsMeta = this.fieldsStore.fieldsMeta;
     if (!fieldsMeta) return false;
-    this.isValid = Object.keys(fieldsMeta).every(i => this[`${i}_isValid`]);
+    let status = Object.keys(fieldsMeta).every(i => this[`${i}_isValid`]);
+    const childrenForm = this.childrenForm;
+    if(status && childrenForm) {
+      const keys = Object.keys(childrenForm);
+      let lg = keys.length;
+      while(lg--) {
+        if(!childrenForm[keys[lg]].every((c) => c.isValid)) {
+          status = false;
+          break;
+        };
+      }
+    }
+    if(status !== this.isValid) {
+      this.isValid = status;
+      this.validChanges.next(status);
+    }
   },
   calValid(key) {
     const form = this,
@@ -237,16 +252,40 @@ const shareMethods = {
     }
     this[validKey] = res;
   },
+  addChildForm(key,child) {
+    const parent = this;
+    const children = parent.childrenForm || (parent.childrenForm = {}),
+    keyChildren = children[key] || (children[key] = []);
+    child = Array.from(new Set([].concat(child)));
+    const controls = parent.controls,
+    control = controls[key] || (controls[key] = []);
+    child.forEach((c) => {
+      if(!c || !c._isVue || c === parent) {
+        return;
+      }
+      if(!c._isAltered) {
+        alterForm(c);
+      }
+      keyChildren.push(c);
+      control.push(c.controls);
+      c.validChanges.subscribe(() => shareMethods.calallValid.call(this));
+    });
+  }
 }
 export function alterForm(form) {
   if (form && form._isVue) {
+    form._isAltered = true;
     const changeSet = new Set(),
       changeSubject = new Subject(),
       valueChanges = new Subject(),
+      validChanges = new Subject(),
       {
         calallValid,
-        calValid
+        calValid,
+        addChildForm
       } = shareMethods;
+    form.validChanges = validChanges;
+    form.addChildForm = addChildForm;
     changeSubject
       .asObservable()
       .pipe(debounceTime(300))
@@ -256,7 +295,7 @@ export function alterForm(form) {
         changeSet.clear();
         calallValid.call(form);
       });
-
+    calallValid.call(form)
     const fieldsMeta = form.fieldsStore.fieldsMeta,
       controls = form.controls || (form.controls = {});
     Object.keys(fieldsMeta).forEach(i => {
@@ -281,10 +320,9 @@ export function alterForm(form) {
       def(control, 'isValid', {
         get: () => form[`${property}_isValid`]
       });
+      def(control, 'value', {
+        get: () => instance.value
+      });
     });
-    setTimeout(() => {
-      form.$set(form, 'isValid', true);
-      calallValid.call(form)
-    }, 500);
   }
 }

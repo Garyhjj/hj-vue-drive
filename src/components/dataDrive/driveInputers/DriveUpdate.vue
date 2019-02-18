@@ -26,7 +26,7 @@
       </a-select>
     </a-form-item>
     <a-form-item :wrapper-col="{ span: 12, offset: 5 }">
-      <a-button type="primary" html-type="submit" :disabled="!form.isValid">Submit</a-button>
+      <a-button type="primary" html-type="submit" :disabled="!isValid">Submit</a-button>
     </a-form-item>
     <a-form :form="form2" @submit="handleSubmit">
       <a-form-item label="Note" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
@@ -62,7 +62,8 @@ export default {
     return {
       form: this.$form.createForm(this),
       form2: this.$form.createForm(this),
-      formLayout: "horizontal"
+      formLayout: "horizontal",
+      isValid: true,
     };
   },
   props: ["inputSet"],
@@ -72,14 +73,20 @@ export default {
   computed: {},
   beforeMount() {},
   mounted() {
-    console.log(this.inputSet);
-    alterForm(this.form);
+    const form = this.form;
+    
+    alterForm(form);
+    form.addChildForm('fgfe',this.form2);
+    console.log(form,this.inputSet);
+    this.isValid = form.isValid;
+    form.validChanges.subscribe((s) => this.isValid = s);
   },
   methods: {
     handleSubmit(e) {
       e.preventDefault();
-      console.log(this);
+      console.log(this.form.getFieldsValue(),this.form2.getFieldsValue());
       this.form.validateFields((err, values) => {
+        console.log(err)
         if (!err) {
           console.log("Received values of form: ", values);
         }
