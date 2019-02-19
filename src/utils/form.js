@@ -120,34 +120,41 @@ export function alterForm(form) {
                 calallValid.call(form);
             });
         calallValid.call(form)
-        const fieldsMeta = form.fieldsStore.fieldsMeta,
-            controls = form.controls || (form.controls = {});
-        console.log(fieldsMeta);
-        Object.keys(fieldsMeta).forEach(i => {
-            const property = i;
-            const instance = form.instances[property];
-            instance.$watch("value", (newVal, oldVal) => {
-                !changeSet.has(property) && changeSet.add(property);
-                changeSubject.next(changeSet);
-                valueChanges.next({
-                    property,
-                    params: {
-                        newVal,
-                        oldVal
-                    }
+        const controls = form.controls || (form.controls = {});
+
+        function bindAll() {
+            const fieldsMeta = form.fieldsStore.fieldsMeta,
+                metaKeys = Object.keys(fieldsMeta);
+            if (metaKeys.length === 0) {
+                return setTimeout(() => bindAll(), 300);
+            }
+            metaKeys.forEach(i => {
+                const property = i;
+                const instance = form.instances[property];
+                instance.$watch("value", (newVal, oldVal) => {
+                    !changeSet.has(property) && changeSet.add(property);
+                    changeSubject.next(changeSet);
+                    valueChanges.next({
+                        property,
+                        params: {
+                            newVal,
+                            oldVal
+                        }
+                    });
+                });
+                const control = controls[property] || (controls[property] = {});
+                control.valueChanges = valueChanges.asObservable().pipe(filter((data) => data.property === property), map(({
+                    params
+                }) => params));
+                calValid.call(form, property);
+                def(control, 'isValid', {
+                    get: () => form[`${property}_isValid`]
+                });
+                def(control, 'value', {
+                    get: () => instance.value
                 });
             });
-            const control = controls[property] || (controls[property] = {});
-            control.valueChanges = valueChanges.asObservable().pipe(filter((data) => data.property === property), map(({
-                params
-            }) => params));
-            calValid.call(form, property);
-            def(control, 'isValid', {
-                get: () => form[`${property}_isValid`]
-            });
-            def(control, 'value', {
-                get: () => instance.value
-            });
-        });
+        }
+        bindAll();
     }
 }
