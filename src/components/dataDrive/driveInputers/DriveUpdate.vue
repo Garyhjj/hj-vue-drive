@@ -1,7 +1,7 @@
 <template>
   <a-form :form="form" @submit="handleSubmit">
     <a-form-item label="Note" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-      <dyInput
+      <dy-input
         v-decorator="[
           'note',
           {rules: [{ required: true, min: 7,message: 'Please input your note!' },
@@ -26,7 +26,7 @@
           ],initialValue: '343435654645'}
         ]"
         :inputOptions="{type:'text'}"
-      ></dyInput>
+      ></dy-input>
     </a-form-item>
     <a-form-item label="Gender" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
       <a-select
@@ -73,7 +73,7 @@
 
 <script>
 import { alterForm } from "@/utils/form";
-import dyInput from "../../inputs/DynamicInput.vue";
+import DyInput from "../../inputs/DynamicInput.vue";
 let id = 0;
 export default {
   data() {
@@ -93,7 +93,7 @@ export default {
   },
   props: ["inputSet"],
   components: {
-    dyInput
+    DyInput
   },
   computed: {},
   beforeMount() {},
