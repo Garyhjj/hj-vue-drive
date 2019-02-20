@@ -7,7 +7,8 @@ import {
     map
 } from "rxjs/operators";
 import {
-    isNil
+    isNil,
+    isPlainObject
 } from './';
 
 const def = Object.defineProperty;
@@ -80,21 +81,37 @@ const shareMethods = {
             keyChildren = children[key] || (children[key] = []);
         const controls = parent.controls,
             control = controls[key] || (controls[key] = []),
-            out = [];
+            out = [],
+            context = parent.templateContext;
         while (number--) {
-            const c = parent.$form.createForm(parent.templateContext);
+            const c = parent.$form.createForm(context);
             if (!c._isAltered) {
-                setTimeout(() => alterForm(c), 1000);
+                alterForm(c, () => {
+                    control.push(c.controls);
+                    c.controls.parent = control;
+                    c.validChanges.subscribe(() => shareMethods.calallValid.call(this));
+                });
             }
             keyChildren.push(c);
-            control.push(c.controls);
-            c.validChanges.subscribe(() => shareMethods.calallValid.call(this));
             out.push(c);
         }
+        context.$forceUpdate();
+        return out;
+    },
+    getValue(tar, out) {
+        if (!isPlainObject(tar)) return;
+        const ks = Object.keys(tar);
+        out = out || {};
+        ks.forEach((k) => {
+            const val = tar[k];
+            Array.isArray(val) ? (out[k] || (out[k] = [])) && val.forEach((v) =>
+                out[k].push(shareMethods.getValue(v))
+            ) : out[k] = val.value;
+        })
         return out;
     }
 }
-export function alterForm(form) {
+export function alterForm(form, cb) {
     if (form && form._isVue) {
         form._isAltered = true;
         const changeSet = new Set(),
@@ -105,7 +122,8 @@ export function alterForm(form) {
                 calallValid,
                 calValid,
                 addChildForm,
-                addChildFormByNumber
+                addChildFormByNumber,
+                getValue
             } = shareMethods;
         form.validChanges = validChanges;
         form.addChildForm = addChildForm;
@@ -119,7 +137,6 @@ export function alterForm(form) {
                 changeSet.clear();
                 calallValid.call(form);
             });
-        calallValid.call(form)
         const controls = form.controls || (form.controls = {});
 
         function bindAll() {
@@ -131,7 +148,7 @@ export function alterForm(form) {
             metaKeys.forEach(i => {
                 const property = i;
                 const instance = form.instances[property];
-                instance.$watch("value", (newVal, oldVal) => {
+                instance.$watch("stateValue", (newVal, oldVal) => {
                     !changeSet.has(property) && changeSet.add(property);
                     changeSubject.next(changeSet);
                     valueChanges.next({
@@ -151,9 +168,14 @@ export function alterForm(form) {
                     get: () => form[`${property}_isValid`]
                 });
                 def(control, 'value', {
-                    get: () => instance.value
+                    get: () => instance.stateValue
                 });
             });
+            def(form, 'value', {
+                get: () => getValue(controls)
+            })
+            cb && cb();
+            calallValid.call(form);
         }
         bindAll();
     }

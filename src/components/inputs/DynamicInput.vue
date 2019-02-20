@@ -5,7 +5,7 @@
         :placeholder="inputOptions.placeHolder?inputOptions.placeHolder:' '"
         v-if="inputOptions.type === 'text'"
         @change="handleChange()"
-        v-model="value"
+        v-model="stateValue"
       ></a-input>
     </div>
   </div>
@@ -14,17 +14,24 @@
 import { Input } from "ant-design-vue";
 export default {
   data() {
+    var _$props = this.$props,
+      value = _$props.value;
     return {
-      value: ""
+      stateValue: value
     };
   },
-  props: ["inputOptions"],
+  props: ["inputOptions", "value"],
   components: {
     [Input.name]: Input
   },
   methods: {
     handleChange() {
-      this.$emit("change", this.value);
+      this.$emit("change", this.stateValue);
+    }
+  },
+  watch: {
+    value: function value(val) {
+      this.stateValue = val;
     }
   }
 };
