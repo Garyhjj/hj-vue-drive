@@ -4,28 +4,9 @@
       <dyInput
         v-decorator="[
           'note',
-          {rules: [{ required: true, min: 7,message: 'Please input your note!' },
-          { min: 7, message: '789465' },
-          {message: '55654',validator: func(form,function(length) {
-      return (ctrl) => {
-        let value = ctrl.value;
-        if (!value) {
-          return null;
-        }
-        let valueL = value.length;
-        return !value || valueL === Number(length)
-          ? null
-          : {
-            length: {
-              requiredLength: Number(length),
-              actualLength: valueL,
-            },
-          };
-      };
-    })}
-          ],initialValue: '343435654645'}
+          {rules: inputSet[0].registerValidators(form),initialValue: '3434',validateFirst: true}
         ]"
-        :inputOptions="{type:'text'}"
+        :inputOptions="inputSet[0].inputOptions"
       ></dyInput>
     </a-form-item>
     <a-form-item label="Gender" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
@@ -74,19 +55,24 @@
 <script>
 import { alterForm } from "@/utils/form";
 import dyInput from "../../inputs/DynamicInput.vue";
+import validators from "../../../shared/services/validatorExtend.service";
+
 let id = 0;
 export default {
   data() {
+    const form = this.$form.createForm(this);
+    alterForm(form);
+    this.vali = validators.getInstance().maxLength(20);
     this.func = function(f, validator) {
       return (rule, value, callback) => {
         const { field } = rule;
         Promise.resolve(validator(f.controls[field])).then(b => {
-          b && callback("err");
+          callback(!b ? [] : "err");
         });
       };
     };
     return {
-      form: this.$form.createForm(this),
+      form,
       formLayout: "horizontal",
       isValid: true
     };
@@ -99,9 +85,9 @@ export default {
   beforeMount() {},
   mounted() {
     const form = this.form;
-
-    alterForm(form);
-    form.addChildFormByNumber("fgfe", 1);
+    form
+      .addChildFormByNumber("fgfe", 1)
+      .then(f => f[0].controls["note"].setValue(478463));
     console.log(form, this.inputSet);
     this.isValid = form.isValid;
     form.validChanges.subscribe(s => (this.isValid = s));

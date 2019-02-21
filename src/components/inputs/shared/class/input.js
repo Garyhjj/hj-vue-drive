@@ -1,7 +1,7 @@
 import {
     deepClone,
     isNumber
-} from './../utils/index';
+} from '@/utils/index';
 
 class ShareUtil {
     setDefaultMore(def) {
@@ -178,7 +178,7 @@ export class CheckboxInputSet extends ShareUtil {
     constructor(opts) {
         this.setDefaultMore({
             options: [],
-            pickerFormat = 'string'
+            pickerFormat: 'string'
         })
         // tslint:disable-next-line:no-unused-expression
         opts && Object.assign(this, opts);

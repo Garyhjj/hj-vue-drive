@@ -75,27 +75,33 @@ const shareMethods = {
         });
         return out;
     },
-    addChildFormByNumber(key, number) {
+    async addChildFormByNumber(key, number) {
         const parent = this;
         const children = parent.childrenForm || (parent.childrenForm = {}),
             keyChildren = children[key] || (children[key] = []);
         const controls = parent.controls,
             control = controls[key] || (controls[key] = []),
             out = [],
-            context = parent.templateContext;
+            context = parent.templateContext,
+            cbs = [],
+            {
+                calallValid
+            } = shareMethods;
         while (number--) {
             const c = parent.$form.createForm(context);
             if (!c._isAltered) {
-                alterForm(c, () => {
+                cbs.push(alterForm(c).then(() => {
                     control.push(c.controls);
                     c.controls.parent = control;
-                    c.validChanges.subscribe(() => shareMethods.calallValid.call(this));
-                });
+                    c.validChanges.subscribe(() => calallValid.call(this));
+                }))
             }
             keyChildren.push(c);
             out.push(c);
         }
         context.$forceUpdate();
+        await Promise.all(cbs);
+        calallValid.call(this);
         return out;
     },
     getValue(tar, out) {
@@ -111,7 +117,7 @@ const shareMethods = {
         return out;
     }
 }
-export function alterForm(form, cb) {
+export async function alterForm(form, cb) {
     if (form && form._isVue) {
         form._isAltered = true;
         const changeSet = new Set(),
@@ -139,16 +145,18 @@ export function alterForm(form, cb) {
             });
         const controls = form.controls || (form.controls = {});
 
-        function bindAll() {
+        async function bindAll() {
             const fieldsMeta = form.fieldsStore.fieldsMeta,
                 metaKeys = Object.keys(fieldsMeta);
             if (metaKeys.length === 0) {
-                return setTimeout(() => bindAll(), 300);
+                return new Promise(r => {
+                    setTimeout(() => r(bindAll()), 300)
+                })
             }
             metaKeys.forEach(i => {
                 const property = i;
                 const instance = form.instances[property];
-                instance.$watch("stateValue", (newVal, oldVal) => {
+                instance.$watch("value", (newVal, oldVal) => {
                     !changeSet.has(property) && changeSet.add(property);
                     changeSubject.next(changeSet);
                     valueChanges.next({
@@ -163,12 +171,23 @@ export function alterForm(form, cb) {
                 control.valueChanges = valueChanges.asObservable().pipe(filter((data) => data.property === property), map(({
                     params
                 }) => params));
+                control.setValue = function (val) {
+                    form.setFieldsValue({
+                        [property]: val
+                    })
+                }
+                // 有初始值的话，先校验一次
+                if (!isNil(instance.value) && instance.value !== '') {
+                    form.validateFields([property])
+                }
                 calValid.call(form, property);
                 def(control, 'isValid', {
                     get: () => form[`${property}_isValid`]
                 });
+                // 为了适应自己的校验器。动态组件的value是oldValue值，所以不准确。
+                const valueName = instance.hasOwnProperty('stateValue') ? 'stateValue' : 'value';
                 def(control, 'value', {
-                    get: () => instance.stateValue
+                    get: () => instance[valueName]
                 });
             });
             def(form, 'value', {
@@ -176,7 +195,8 @@ export function alterForm(form, cb) {
             })
             cb && cb();
             calallValid.call(form);
+            return form;
         }
-        bindAll();
+        return bindAll();
     }
 }

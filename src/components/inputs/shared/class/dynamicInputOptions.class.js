@@ -26,6 +26,7 @@ export class DynamicFormInput {
                 Object.assign({}, this.inputOptions),
             );
         }
+        this.validators = [];
     }
 
     required() {
@@ -50,9 +51,45 @@ export class DynamicFormInput {
     get default() {
         return this.inputOptions.default || null;
     }
-
-    setValidator(validators) {
-        (this.validators || (this.validators = [])).push(validators);
+    mapValidator(f, v) {
+        return (rule, value, callback) => {
+            const {
+                field
+            } = rule;
+            if (!f) {
+                callback([]);
+            }
+            Promise.resolve(v(f.controls[field])).then(b => {
+                callback(!b ? [] : "err");
+            });
+        };
+    }
+    setValidator(newValidators) {
+        const validators = (this.validators || (this.validators = []));
+        [].concat(newValidators).forEach((v) => {
+            const {
+                validator
+            } = v;
+            if (typeof validator === 'function') {
+                v._validator = validator;
+            }
+            validators.push(v)
+        })
         return this;
+    }
+    registerValidators(f) {
+        const old = this.formInstance;
+        if (old !== f) {
+            this.formInstance = f;
+            this.validators.forEach((v) => {
+                const {
+                    _validator
+                } = v;
+                if (typeof _validator === 'function') {
+                    v.validator = this.mapValidator(f, _validator);
+                }
+            });
+        }
+        return this.validators;
     }
 }
