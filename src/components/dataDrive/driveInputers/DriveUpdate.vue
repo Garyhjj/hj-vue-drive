@@ -1,13 +1,13 @@
 <template>
   <a-form :form="form" @submit="handleSubmit">
     <a-form-item label="Note" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-      <dyInput
+      <dy-input
         v-decorator="[
           'note',
           {rules: inputSet[0].registerValidators(form),initialValue: '3434',validateFirst: true}
         ]"
         :inputOptions="inputSet[0].inputOptions"
-      ></dyInput>
+      ></dy-input>
     </a-form-item>
     <a-form-item label="Gender" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
       <a-select
@@ -54,8 +54,8 @@
 
 <script>
 import { alterForm } from "@/utils/form";
-import dyInput from "../../inputs/DynamicInput.vue";
 import validators from "../../../shared/services/validatorExtend.service";
+import DyInput from "../../inputs/DynamicInput.vue";
 
 let id = 0;
 export default {
@@ -79,7 +79,7 @@ export default {
   },
   props: ["inputSet"],
   components: {
-    dyInput
+    DyInput
   },
   computed: {},
   beforeMount() {},
