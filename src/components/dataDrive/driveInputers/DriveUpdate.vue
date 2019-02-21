@@ -49,13 +49,36 @@
         </a-form-item>
       </a-form>
     </div>
+    {{userName}}
   </a-form>
 </template>
 
 <script>
 import { alterForm } from "@/utils/form";
 import validators from "../../../shared/services/validatorExtend.service";
+import encryptUtilService from "../../../shared/services/encrypt.service.js"
 import DyInput from "../../inputs/DynamicInput.vue";
+import axios from "axios";
+
+const eee = encryptUtilService.getInstance();
+function getNewToken(userName, password) {
+    let enUsername = eee.AesEncrypt(
+      userName,
+      eee.key,
+      eee.iv,
+    );
+    let enPassword = eee.AesEncrypt(
+      password,
+      eee.key,
+      eee.iv,
+    );
+    return { userName: enUsername, password: enPassword };
+  }
+var instance = axios.create({
+baseURL: 'https://miwebapi.mic.com.cn/',
+timeout: 1000*60,
+headers: {'Content-Type': 'application/json; charset=utf-8'}
+});
 
 let id = 0;
 export default {
@@ -82,7 +105,13 @@ export default {
     DyInput
   },
   computed: {},
-  beforeMount() {},
+  beforeMount() {
+    instance.post("global/login",getNewToken("gary.h","M-480023")).then((res) => {
+  console.log(res);
+  this.$store.commit('login',res.data.User);
+  console.log(this.$store)
+})
+  },
   mounted() {
     const form = this.form;
     form
@@ -91,6 +120,11 @@ export default {
     console.log(form, this.inputSet);
     this.isValid = form.isValid;
     form.validChanges.subscribe(s => (this.isValid = s));
+  },
+  computed: {
+    userName(){
+      return this.$store.state.user.USER_NAME;
+    }
   },
   methods: {
     handleSubmit(e) {

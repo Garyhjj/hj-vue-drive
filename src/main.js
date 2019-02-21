@@ -1,5 +1,6 @@
-import Vue from 'vue'
-import App from './App.vue'
+import Vue from 'vue';
+import App from './App.vue';
+import Vuex from 'vuex';
 import {
   Button,
   Layout,
@@ -7,9 +8,26 @@ import {
   Breadcrumb,
   Icon,Form,Input,Select
 } from "ant-design-vue";
-import router from './router'
+import router from './router';
 
+Vue.use(Vuex);
+const store = new Vuex.Store({
+  state: {
+    count: 0,
+    user: {}
+  },
+  mutations: {
+    increment (state) {
+      state.count++
+    },
+    login(state,user) {
+      state.user = user
+    }
+  }
+})
+store.commit('increment')
 
+console.log(store.state.count) // -> 1
 function initRegisterCom(vue) {
   return (com) => {
     const ls = [].concat(com);
@@ -28,5 +46,6 @@ Vue.config.productionTip = false;
 
 new Vue({
   router,
+  store,
   render: h => h(App),
 }).$mount('#app')
