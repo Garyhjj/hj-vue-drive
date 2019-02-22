@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <a-select v-model="stateValue" @change="handleChange()">
+      <a-select v-model="stateValue" @change="handleChange()" :allowClear="true">
         <a-select-option
           :value="item.property"
           v-for="item in options"
