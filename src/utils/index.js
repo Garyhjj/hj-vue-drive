@@ -1,5 +1,11 @@
 import * as moment from 'moment';
-
+import axios from "axios";
+import {
+  Subject
+} from 'rxjs';
+import {
+  throttleTime
+} from 'rxjs/operators';
 
 /**
  * 对能改变数组的方法添加钩子函数
@@ -202,3 +208,34 @@ export function arrayClassifyByOne(target, prop) {
   });
   return out;
 }
+
+export const myAxios = axios.create({
+  baseURL: process.env.VUE_APP_BASE_URL,
+  timeout: 1000 * 60,
+  headers: {
+    'Content-Type': 'application/json; charset=utf-8'
+  }
+});
+
+
+const reqSubject = new Subject();
+export const reqObserve = reqSubject
+  .asObservable()
+  .pipe(throttleTime(1000 * 10));
+myAxios.interceptors.request.use(function (config) {
+  // 在发送请求之前做些什么
+  reqSubject.next(1);
+  return config;
+}, function (error) {
+  // 对请求错误做些什么
+  return Promise.reject(error);
+});
+
+myAxios.interceptors.response.use(function (response) {
+  // 对响应数据做点什么
+  return response.data;
+}, function (error) {
+  // 对响应错误做点什么
+  return Promise.reject(error);
+})
+myAxios.reqObserve = reqObserve;

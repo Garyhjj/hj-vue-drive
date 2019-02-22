@@ -27,11 +27,11 @@ class ShareUtil {
 
 export class FileUpload extends ShareUtil {
     constructor(opts) {
+        super();
         this.setDefaultMore({
             maxCount: 8,
             hideUploadButton: true,
         })
-        setDefaultMore(tgus, )
         // tslint:disable-next-line:no-unused-expression
         opts && Object.assign(this, opts);
         this.type = 'fileUpload';
@@ -40,6 +40,7 @@ export class FileUpload extends ShareUtil {
 
 export class PhotoUpload extends ShareUtil {
     constructor(opts) {
+        super();
         this.setDefaultMore({
             pickerFormat: 'string',
             maxCount: 9,
@@ -55,6 +56,7 @@ export class PhotoUpload extends ShareUtil {
 
 export class ColleagueSearcher extends ShareUtil {
     constructor(opts) {
+        super();
         this.setDefaultMore({
             pickerFormat: '{EMPNO}',
         })
@@ -65,6 +67,7 @@ export class ColleagueSearcher extends ShareUtil {
 
 export class Switch extends ShareUtil {
     constructor(opts) {
+        super();
         // tslint:disable-next-line:no-unused-expression
         this.setDefaultMore({
             falseFormat: 'N',
@@ -96,6 +99,7 @@ export class Cascader extends ShareUtil {
     //     options ? : CascaderOption[];
     // };
     constructor(opts) {
+        super();
         this.setDefaultMore(null);
         // tslint:disable-next-line:no-unused-expression
         opts && Object.assign(this, opts);
@@ -119,6 +123,7 @@ export class DatePicker extends ShareUtil {
     //     showMode ? : 'month' | 'day';
     // };
     constructor(opts) {
+        super();
         this.placeHolder = this.placeHolder || '請選擇時間';
         this.setDefaultMore({
             pickerFormat: 'YYYY-MM-DD',
@@ -141,6 +146,7 @@ export class TimePicker extends ShareUtil {
     //     showFormat ? : string;
     // };
     constructor(opts) {
+        super();
         this.placeHolder = this.placeHolder || '請選擇時間';
         this.setDefaultMore({
             pickerFormat: 'HH:mm:ss',
@@ -176,6 +182,7 @@ export class CheckboxInputSet extends ShareUtil {
     //     } [];
     // };
     constructor(opts) {
+        super();
         this.setDefaultMore({
             options: [],
             pickerFormat: 'string'
@@ -217,6 +224,7 @@ export class SelectInputSet extends ShareUtil {
     //     lazyAPIUserMes ? : any;
     // };
     constructor(opts) {
+        super();
         this.setDefaultMore({
             options: []
         });
@@ -258,6 +266,7 @@ export class AutoCompleteSet extends ShareUtil {
     //     isSelection ? : boolean; // 是否只能限定选项内容
     // };
     constructor(opts) {
+        super();
         this.setDefaultMore({
             options: []
         });
@@ -406,6 +415,7 @@ export class NumberInputSet extends ShareUtil {
     //     editable ? : boolean;
     // };
     constructor(opts) {
+        super();
         this.setDefaultMore({
             editable: true,
             step: 1,

@@ -9,6 +9,15 @@
         :inputOptions="inputSet[0].inputOptions"
       ></dy-input>
     </a-form-item>
+    <a-form-item label="Note" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+      <dy-input
+        v-decorator="[
+          'note3',
+          {rules: inputSet[1].registerValidators(form),validateFirst: true}
+        ]"
+        :inputOptions="inputSet[1].inputOptions"
+      ></dy-input>
+    </a-form-item>
     <a-form-item label="Gender" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
       <a-select
         v-decorator="[
@@ -56,29 +65,17 @@
 <script>
 import { alterForm } from "@/utils/form";
 import validators from "../../../shared/services/validatorExtend.service";
-import encryptUtilService from "../../../shared/services/encrypt.service.js"
+import authService from "../../../shared/services/auth.service";
+import encryptUtilService from "../../../shared/services/encrypt.service.js";
 import DyInput from "../../inputs/DynamicInput.vue";
-import axios from "axios";
+import { myAxios } from "@/utils";
 
 const eee = encryptUtilService.getInstance();
 function getNewToken(userName, password) {
-    let enUsername = eee.AesEncrypt(
-      userName,
-      eee.key,
-      eee.iv,
-    );
-    let enPassword = eee.AesEncrypt(
-      password,
-      eee.key,
-      eee.iv,
-    );
-    return { userName: enUsername, password: enPassword };
-  }
-var instance = axios.create({
-baseURL: 'https://miwebapi.mic.com.cn/',
-timeout: 1000*60,
-headers: {'Content-Type': 'application/json; charset=utf-8'}
-});
+  let enUsername = eee.AesEncrypt(userName, eee.key, eee.iv);
+  let enPassword = eee.AesEncrypt(password, eee.key, eee.iv);
+  return { userName: enUsername, password: enPassword };
+}
 
 let id = 0;
 export default {
@@ -104,13 +101,13 @@ export default {
   components: {
     DyInput
   },
-  computed: {},
   beforeMount() {
-    instance.post("global/login",getNewToken("gary.h","M-480023")).then((res) => {
-  console.log(res);
-  this.$store.commit('login',res.data.User);
-  console.log(this.$store)
-})
+    authService
+      .getInstance()
+      .login({ userName: "gary.h", password: "M-480023" })
+      .then(res => {
+        console.log(res);
+      });
   },
   mounted() {
     const form = this.form;
@@ -122,7 +119,7 @@ export default {
     form.validChanges.subscribe(s => (this.isValid = s));
   },
   computed: {
-    userName(){
+    userName() {
       return this.$store.state.user.USER_NAME;
     }
   },

@@ -24,6 +24,15 @@ export default {
             validator: validators.getInstance().maxLength(20)
           }
         ]),
+        new DynamicFormInput("gender", "gender", {
+          type: "select",
+          more: {
+            options: [
+              { property: 123, value: 789 },
+              { property: 343, value: 78954 }
+            ]
+          }
+        }).required(),
         { property: "gender" }
       ]
     };

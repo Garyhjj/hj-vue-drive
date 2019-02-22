@@ -4,11 +4,11 @@
       <a-input
         :placeholder="inputOptions.placeHolder?inputOptions.placeHolder:' '"
         v-if="inputOptions.type === 'text'"
-        @change="handleChange()"
+        @change="handleChange(stateValue)"
         v-model="stateValue"
       ></a-input>
       <mx-select
-        @change="handleChange()"
+        @change="handleChange"
         v-model="stateValue"
         v-if="inputOptions.type === 'select'"
         :placeholder="inputOptions.placeHolder?inputOptions.placeHolder:' '"
@@ -33,11 +33,17 @@ export default {
   },
   props: ["inputOptions", "value"],
   components: {
-    [Input.name]: Input
+    [Input.name]: Input,
+    MxSelect
+  },
+  computed: {
+    more() {
+      return this.inputOptions.more;
+    }
   },
   methods: {
-    handleChange() {
-      this.$emit("change", this.stateValue);
+    handleChange(v) {
+      this.$emit("change", v);
     }
   },
   watch: {
