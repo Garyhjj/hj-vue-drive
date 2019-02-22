@@ -1,35 +1,19 @@
 <template>
   <a-form :form="form" @submit="handleSubmit">
-    <a-form-item label="Note" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
+    <a-form-item
+      :label="item.label"
+      :label-col="{ span: 5 }"
+      :wrapper-col="{ span: 12 }"
+      v-for="item in inputSet"
+      :key="item.property"
+    >
       <dy-input
         v-decorator="[
-          'note',
-          {rules: inputSet[0].registerValidators(form),initialValue: '3434',validateFirst: true}
+           item.property,
+          {rules: item.registerValidators(form),initialValue: item.default,validateFirst: true}
         ]"
-        :inputOptions="inputSet[0].inputOptions"
+        :inputOptions="item.inputOptions"
       ></dy-input>
-    </a-form-item>
-    <a-form-item label="Note" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-      <dy-input
-        v-decorator="[
-          'note3',
-          {rules: inputSet[1].registerValidators(form),validateFirst: true}
-        ]"
-        :inputOptions="inputSet[1].inputOptions"
-      ></dy-input>
-    </a-form-item>
-    <a-form-item label="Gender" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }">
-      <a-select
-        v-decorator="[
-          'gender',
-          {rules: [{ required: true, message: 'Please select your gender!' }],initialValue: 'male'}
-        ]"
-        placeholder="Select a option and change input text above"
-        @change="handleChange('gender')"
-      >
-        <a-select-option value="male">male</a-select-option>
-        <a-select-option value="female">female</a-select-option>
-      </a-select>
     </a-form-item>
     <a-form-item :wrapper-col="{ span: 12, offset: 5 }">
       <a-button type="primary" html-type="submit" :disabled="!isValid">Submit</a-button>

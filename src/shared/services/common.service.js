@@ -1,4 +1,10 @@
-// import { sify, tify } from './../../shared/utils/chinese-conv/index';
+import {
+    tify
+} from '../../utils/chinese-conv';
+import {replaceQuery} from '@/utils';
+import {
+    APIGlobalConfig
+} from './../../config/apiGlobal';
 import * as moment from 'moment';
 import * as XLSX from 'xlsx';
 
@@ -6,12 +12,14 @@ export class CommonService {
     //   loadingId: string;
     //   audio: HTMLAudioElement;
     constructor(
-        router
+        router,
+        http
         // private router: Router,
         // private _message: NzMessageService,
         // private modalService: NzModalService,
     ) {
         this.router = router;
+        this.http = http;
     }
 
     errDeal(err) {
@@ -293,6 +301,32 @@ export class CommonService {
         } else {
             return date;
         }
+    }
+
+    async getColleague(name) {
+        if (!(typeof name === 'string') || !name) return [];
+        let emp_name = name.toUpperCase();
+        emp_name = tify(emp_name)
+            .replace(/^\"/g, '')
+            .replace(/\"$/g, '');
+        return this.http.get(
+            replaceQuery(APIGlobalConfig.getAgentUrl, {
+                emp_name
+            }),
+        );
+    }
+
+    uploadPicture(img) {
+        if (!img) return;
+        img = img.replace(/data\:image\/\w+\;base64\,/, '');
+        return this.http.post(APIGlobalConfig.uploadPicture, {
+            PICTURE: img
+        }).then(
+            res => {
+                let url = res['PICTURE_URL'];
+                return url;
+            },
+        );
     }
 }
 

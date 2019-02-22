@@ -224,7 +224,18 @@ export const reqObserve = reqSubject
   .pipe(throttleTime(1000 * 10));
 myAxios.interceptors.request.use(function (config) {
   // 在发送请求之前做些什么
+  const {url} = config;
+  if(url.indexOf('global/login') < 0) {
+    let tokenStr = localStorage.getItem('tokenMes');
+    if (tokenStr) {
+      let tokenMes = JSON.parse(tokenStr);
+      if (typeof tokenMes === 'object') {
+        Object.assign(config.headers,{ access_token: tokenMes.token })
+      }
+    }
+  }
   reqSubject.next(1);
+  console.log(config)
   return config;
 }, function (error) {
   // 对请求错误做些什么

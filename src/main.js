@@ -9,7 +9,8 @@ import {
   Icon,
   Form,
   Input,
-  Select
+  Select,
+  Spin
 } from "ant-design-vue";
 import {
   BehaviorSubject
@@ -55,7 +56,7 @@ const registerCom = initRegisterCom(Vue);
 registerCom([Icon, Button, Menu, Menu.SubMenu,
   Menu.Item, Layout, Layout.Header, Layout.Sider,
   Layout.Footer, Layout.Content, Breadcrumb, Breadcrumb.Item,
-  Form, Form.Item, Input, Select, Select.Option
+  Form, Form.Item, Input, Select, Select.Option,Spin
 ]);
 
 
@@ -81,4 +82,4 @@ const root = new Vue({
 }).$mount('#app');
 
 
-authService.getInstance(false, myAxios, encryptService.getInstance(), commonService.getInstance(false, router), root)
+authService.getInstance(false, myAxios, encryptService.getInstance(), commonService.getInstance(false, router, myAxios), root)

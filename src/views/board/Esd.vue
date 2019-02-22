@@ -33,7 +33,18 @@ export default {
             ]
           }
         }).required(),
-        { property: "gender" }
+        new DynamicFormInput("note23", "note56", { type: "text" }).setValidator([
+          {
+            max: 6,
+            message: 333
+          },
+        ]),
+        new DynamicFormInput("note2", "note6", { type: "colleagueSearcher"}).setValidator([
+          {
+            max: 6,
+            message: 333
+          },
+        ])
       ]
     };
   },
