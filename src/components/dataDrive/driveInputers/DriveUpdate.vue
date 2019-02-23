@@ -97,7 +97,9 @@ export default {
     const form = this.form;
     form
       .addChildFormByNumber("fgfe", 1)
-      .then(f => f[0].controls["note"].setValue(478463));
+      .then(f => f[0].controls["note"].setValue(478463)).then(() => {
+// setTimeout(() => form.controls['note6'].setValue('FE716'),20000)
+      });
     console.log(form, this.inputSet);
     this.isValid = form.isValid;
     form.validChanges.subscribe(s => (this.isValid = s));
@@ -110,8 +112,8 @@ export default {
   methods: {
     handleSubmit(e) {
       e.preventDefault();
+      console.log(this.form.value);
       this.form.validateFields((err, values) => {
-        console.log(err);
         if (!err) {
           console.log(
             "Received values of form: ",

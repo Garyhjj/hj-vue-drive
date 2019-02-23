@@ -12,7 +12,6 @@
   </div>
 </template>
 <script>
-import { Input } from "ant-design-vue";
 import { myAxios, replaceQuery, sortUtils } from "@/utils";
 import cacheService from "@/shared/services/cache.service";
 
@@ -27,7 +26,6 @@ export default {
   },
   props: ["placeholder", "value", "lazyAPI", "options", "lazyParams"],
   components: {
-    [Input.name]: Input
   },
   computed: {
     user() {

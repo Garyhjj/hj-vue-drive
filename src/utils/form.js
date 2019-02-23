@@ -70,6 +70,7 @@ const shareMethods = {
             }
             keyChildren.push(c);
             control.push(c.controls);
+            c.controls.parent = control;
             c.validChanges.subscribe(() => shareMethods.calallValid.call(this));
             out.push(c);
         });
@@ -109,6 +110,9 @@ const shareMethods = {
         const ks = Object.keys(tar);
         out = out || {};
         ks.forEach((k) => {
+            if(k === 'parent') {
+                return;
+            }
             const val = tar[k];
             Array.isArray(val) ? (out[k] || (out[k] = [])) && val.forEach((v) =>
                 out[k].push(shareMethods.getValue(v))

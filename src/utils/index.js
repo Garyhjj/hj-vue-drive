@@ -1,7 +1,8 @@
 import * as moment from 'moment';
 import axios from "axios";
 import {
-  Subject
+  Subject,
+  Observable
 } from 'rxjs';
 import {
   throttleTime
@@ -235,7 +236,6 @@ myAxios.interceptors.request.use(function (config) {
     }
   }
   reqSubject.next(1);
-  console.log(config)
   return config;
 }, function (error) {
   // 对请求错误做些什么
@@ -250,3 +250,10 @@ myAxios.interceptors.response.use(function (response) {
   return Promise.reject(error);
 })
 myAxios.reqObserve = reqObserve;
+
+export function fromPromiseToOb(fun) {
+  return new Observable(ob => {
+    const p = typeof fun === 'function'?fun(): fun;
+    p.then(res => ob && ob.next(res) && ob.complete())
+      .catch(err => ob && ob.error(err)&& ob.complete())});
+}

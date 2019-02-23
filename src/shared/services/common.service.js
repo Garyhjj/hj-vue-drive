@@ -13,13 +13,15 @@ export class CommonService {
     //   audio: HTMLAudioElement;
     constructor(
         router,
-        http
+        http,
+        _message
         // private router: Router,
         // private _message: NzMessageService,
         // private modalService: NzModalService,
     ) {
         this.router = router;
         this.http = http;
+        this._message = _message;
     }
 
     errDeal(err) {
@@ -33,22 +35,14 @@ export class CommonService {
                     return;
                 case 400:
                     return this._message.error(
-                        err.error.message || err.error || '無效請求', {
-                            nzDuration: 3000,
-                        },
+                        err.error.message || err.error || '無效請求'
                     );
                 case 404:
-                    return this._message.error('没找到资源', {
-                        nzDuration: 3000
-                    });
+                    return this._message.error('没找到资源');
                 case 500:
-                    return this._message.error('無法連接到服務器,請稍後重試！', {
-                        nzDuration: 3000,
-                    });
+                    return this._message.error('無法連接到服務器,請稍後重試！');
                 case 0:
-                    return this._message.error(err.statusText, {
-                        nzDuration: 3000
-                    });
+                    return this._message.error(err.statusText);
                 default:
                     //   this.myErrorHandlerService.handleError(err);  日志
             }
@@ -56,9 +50,7 @@ export class CommonService {
     }
 
     tokenTimeOut() {
-        this._message.create('error', '授权已超时,请重新登录', {
-            nzDuration: 5000,
-        });
+        this._message.error( '授权已超时,请重新登录',5);
         this.router.push('/login');
     }
 
@@ -94,27 +86,19 @@ export class CommonService {
         // ];
         // const toExcel = new ExportJsonExcel(option); // new
         // toExcel.saveExcel(); // 保存
-        this._message.info('文件將被下載到瀏覽器的默認下載目錄中', {
-            nzDuration: 4000,
-        });
+        this._message.info('文件將被下載到瀏覽器的默認下載目錄中',4);
     }
 
     showGlobalSucMes(mes) {
-        this._message.success(mes, {
-            nzDuration: 3000
-        });
+        this._message.success(mes);
     }
 
     showGlobalErrMes(mes) {
-        this._message.error(mes, {
-            nzDuration: 3000
-        });
+        this._message.error(mes);
     }
 
     showGlobalWarningMes(mes) {
-        this._message.warning(mes, {
-            nzDuration: 3000
-        });
+        this._message.warning(mes);
     }
 
     showWarningConfirm(
@@ -154,21 +138,9 @@ export class CommonService {
 
     showLoading() {
         // tslint:disable-next-line:no-unused-expression
-        this.loadingId && this.dismissLoading(this.loadingId);
-        this.loadingId = this._message.loading('正在執行中', {
-            nzDuration: 0,
-        }).messageId;
-        return this.loadingId;
-    }
-
-    showLoading2() {
-        const loadindId = this.showLoading();
-        const dismiss = () => this.dismissLoading(loadindId);
-        return dismiss;
-    }
-
-    dismissLoading(id) {
-        this._message.remove(id);
+        this.dismiss && this.dismiss();
+        this.dismiss = this._message.loading('正在執行中',0);
+        return this.dismiss;
     }
 
     playAudio(

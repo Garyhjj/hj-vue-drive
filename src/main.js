@@ -10,7 +10,8 @@ import {
   Form,
   Input,
   Select,
-  Spin
+  Spin,
+  DatePicker,message,Table,Tag,Divider
 } from "ant-design-vue";
 import {
   BehaviorSubject
@@ -18,9 +19,11 @@ import {
 import router from './router';
 
 
-import authService from './shared/services/auth.service';
-import commonService from './shared/services/common.service';
-import encryptService from './shared/services/encrypt.service';
+import AuthService from './shared/services/auth.service';
+import CommonService from './shared/services/common.service';
+import EncryptService from './shared/services/encrypt.service';
+import CacheService from './shared/services/cache.service';
+import DataDriveService from './components/dataDrive/shared/services/dataDrive.service';
 
 import {
   myAxios
@@ -48,7 +51,7 @@ const store = new Vuex.Store({
 function initRegisterCom(vue) {
   return (com) => {
     const ls = [].concat(com);
-    ls.forEach(l => vue.component(l.name, l))
+    ls.forEach(l => l&& vue.component(l.name, l))
   };
 }
 
@@ -56,7 +59,9 @@ const registerCom = initRegisterCom(Vue);
 registerCom([Icon, Button, Menu, Menu.SubMenu,
   Menu.Item, Layout, Layout.Header, Layout.Sider,
   Layout.Footer, Layout.Content, Breadcrumb, Breadcrumb.Item,
-  Form, Form.Item, Input, Select, Select.Option,Spin
+  Form, Form.Item, Input, Select, Select.Option,Spin,DatePicker,
+  DatePicker.WeekPickerker,DatePicker.MonthPicker,DatePicker.RangePicker,
+  Table,Tag,Divider
 ]);
 
 
@@ -64,11 +69,17 @@ Vue.config.productionTip = false;
 
 
 Vue.prototype.userChanges = new BehaviorSubject(store.state.user);
+const authService = {};
+const commonService = CommonService.getInstance(false, router, myAxios, message);
 
 const root = new Vue({
   router,
   store,
   render: h => h(App),
+  provide: {
+    authService,
+    commonService
+  },
   computed: {
     user() {
       return this.$store.state.user
@@ -81,5 +92,11 @@ const root = new Vue({
   }
 }).$mount('#app');
 
-
-authService.getInstance(false, myAxios, encryptService.getInstance(), commonService.getInstance(false, router, myAxios), root)
+const auth = AuthService.getInstance(false, myAxios, EncryptService.getInstance(),commonService, root);
+Object.assign(authService,auth);
+authService.__proto__ = auth.constructor.prototype;
+DataDriveService.getInstance(false,myAxios,commonService,authService,CacheService.getInstance());
+auth.login({ userName: "gary.h", password: "M-480023" })
+      .then(res => {
+        console.log(res);
+      });

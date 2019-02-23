@@ -16,20 +16,32 @@
         :lazyAPI="more.lazyAPI"
         :lazyParams="more.lazyParams"
       ></mx-select>
-      <colleague-searcher @change="handleChange"
-        v-model="stateValue" v-if="inputOptions.type === 'colleagueSearcher'"
+      <colleague-searcher
+        @change="handleChange"
+        v-model="stateValue"
+        v-if="inputOptions.type === 'colleagueSearcher'"
         :miPlaceHolder="inputOptions.placeHolder?inputOptions.placeHolder:' '"
         :miDisabled="more.editable"
         :miPickerFormat="more.pickerFormat"
         :miSearchFilter="more.searchFilter"
-        ></colleague-searcher>
+      ></colleague-searcher>
+      <mx-date-picker
+        @change="handleChange"
+        v-model="stateValue"
+        v-if="inputOptions.type === 'datePicker'"
+        :myPickerFormat="more.pickerFormat"
+        :myFormat="more.showFormat"
+        :myShowTime="more.showTime"
+        :myPlaceHolder="inputOptions.placeHolder"
+        :myMode="more.showMode"
+      ></mx-date-picker>
     </div>
   </div>
 </template>
 <script>
-import { Input } from "ant-design-vue";
 import MxSelect from "./MxSelect.vue";
 import ColleagueSearcher from "./ColleagueSearcher.vue";
+import MxDatePicker from "./MxDatePicker.vue";
 
 export default {
   data() {
@@ -41,9 +53,9 @@ export default {
   },
   props: ["inputOptions", "value"],
   components: {
-    [Input.name]: Input,
     MxSelect,
-    ColleagueSearcher
+    ColleagueSearcher,
+    MxDatePicker
   },
   computed: {
     more() {
@@ -57,6 +69,7 @@ export default {
   },
   watch: {
     value: function value(val) {
+      console.log(val);
       this.stateValue = val;
     }
   }
