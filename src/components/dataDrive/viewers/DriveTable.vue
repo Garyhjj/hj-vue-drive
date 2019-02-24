@@ -1,97 +1,154 @@
 <template>
   <a-table :columns="columns" :dataSource="data">
-    <a slot="name" slot-scope="text" href="javascript:;">{{text}}</a>
-<span :slot="item.slots.title" v-for="item in columns" :key="item.key">
-    <slot name="header" :property="item.property" :value="item.value">{{item.value}}</slot>
-</span>
+    <template v-slot:[item.slots.title] v-for="item in columns">
+      <div class="break-word" :key="item.property" :style= "{ fontSize: more.header.textSize}">
+      <slot name="tableHeader" :property="item.property" :value="item.value">
+          {{item.value}}
+        </slot>
+        </div>
+    </template>
 
-    <span slot="tags" slot-scope="tags">
-      <a-tag v-for="tag in tags" color="blue" :key="tag">{{tag}}</a-tag>
-    </span>
-    <template v-slot:action="data">
-      <span>
-        <a href="javascript:;">Invite 一 {{data.name}}</a>
+    <template v-slot:[item.scopedSlots.customRender]="value,record" v-for="item in columns">
+      <div class="break-word" :key="item.property">
+      <slot name="tableBody" :property="item.property" :value="value" :record="record" v-if="item.property!=='Action'">
+          {{value}}
+      </slot>
+      <span v-if="item.property==='Action'">
+        <a href="javascript:;">修改</a>
         <a-divider type="vertical"/>
-        <a href="javascript:;">Delete</a>
+        <a href="javascript:;">删除</a>
         <a-divider type="vertical"/>
-        <a href="javascript:;" class="ant-dropdown-link">More actions
-          <a-icon type="down"/>
-        </a>
+        <a href="javascript:;">更新</a>
+        <slot name="tableAction" :data="record"></slot>
       </span>
-      <slot name="action" :data="data"></slot>
+      </div>
     </template>
   </a-table>
 </template>
 <script>
-const columns = [
-  {
-      property:'name',
-      value:'NAME',
-    dataIndex: "name",
-    key: "name",
-    slots: { title: "customTitle5" },
-    scopedSlots: { customRender: "name" }
-  },
-  {
-      property:'age',
-      value:'AGE',
-    dataIndex: "age",
-     slots: { title: "customTitle4" },
-    key: "age"
-  },
-  {
-    title: "Address",
-    dataIndex: "address",
-     slots: { title: "customTitle3" },
-    key: "address"
-  },
-  {
-    title: "Tags",
-    key: "tags",
-    dataIndex: "tags",
-     slots: { title: "customTitle1" },
-    scopedSlots: { customRender: "tags" }
-  },
-  {
-    title: "Action",
-    key: "action",
-     slots: { title: "customTitle2" },
-    scopedSlots: { customRender: "action" }
-  }
-];
-
-const data = [
-  {
-    key: "1",
-    name: "John Brown",
-    age: 32,
-    address: "New York No. 1 Lake Park",
-    tags: ["nice", "developer"]
-  },
-  {
-    key: "2",
-    name: "Jim Green",
-    age: 42,
-    address: "London No. 1 Lake Park",
-    tags: ["loser"]
-  },
-  {
-    key: "3",
-    name: "Joe Black",
-    age: 32,
-    address: "Sidney No. 1 Lake Park",
-    tags: ["cool", "teacher"]
-  }
-];
+// const columns = [
+//   {
+//       property:'TITLE',
+//       value:'fdgf4',
+//     dataIndex: "TITLE",
+//     key: "TITLE",
+//     slots: { title: "TITLETitle" },
+//     scopedSlots: { customRender: "name" }
+//   },
+//   {
+//       property:'age',
+//       value:'AGE',
+//     dataIndex: "age",
+//      slots: { title: "customTitle4" },
+//     key: "age"
+//   },
+//   {
+//     title: "Address",
+//     dataIndex: "address",
+//      slots: { title: "customTitle3" },
+//     key: "address"
+//   },
+//   {
+//     title: "Tags",
+//     key: "tags",
+//     dataIndex: "tags",
+//      slots: { title: "customTitle1" },
+//     scopedSlots: { customRender: "tags" }
+//   },
+//   {
+//     title: "Action",
+//     key: "action",
+//      slots: { title: "customTitle2" },
+//     scopedSlots: { customRender: "action" }
+//   }
+// ];
 
 export default {
+  inject: ["dataDrive"],
   data() {
-      console.log(this.$slots,this)
+    const d = this.dataDrive;
+    this.tableData = d.tableData;
     return {
-      data,
-      columns,
-      headers:[{property:'a',value:'7895'},{property:'b',value:'456123'}]
+      data: [],
+      headers: [
+        { property: "a", value: "7895" },
+        { property: "b", value: "456123" }
+      ],
+      columns:[],
+      more: d.dataViewSet.more
     };
+  },
+  beforeCreate() {
+  },
+  beforeMount() {
+    this.bindEvent();
+    const d = this.dataDrive;
+    this.initTableData(d.tableData.data);
+    this.initColumns();
+  },
+  methods: {
+    bindTableData() {
+      this.dataDrive.afterDataInit((ds) => {
+        // this.tableData.data = this._dataDrive.tableData.data;
+        this.allChecked = false;
+        // this.updateFilterColumns(true);
+        console.log(456)
+        this.initTableData(ds);
+      });
+    },
+    bindEvent() {
+      this.bindTableData();
+    },
+    initColumns() {
+const columns = this.tableData.columns.map(v => {
+      const { property, value } = v;
+      return Object.assign(
+        {},
+        {
+          dataIndex: property,
+          key: property,
+          slots: { title: `${property}Title` },
+          scopedSlots: { customRender: `${property}Body` }
+        },
+        v
+      );
+    });
+    columns.push({
+        property: 'Action',
+        value: 'Action',
+    key: "action",
+     slots: { title: "Action" },
+    scopedSlots: { customRender: "myAction" }
+  })
+    this.columns = columns;
+    console.log(columns);
+    },
+    initTableData(data) {
+      if (Array.isArray(data)) {
+        let i = 1;
+        this.data = [].concat(
+          data.map(bs => {
+            const originalData = bs.originalData;
+            const { ID } = originalData;
+            return Object.assign(
+              {},
+              {
+                key: ID || ++i
+              },
+              originalData
+            );
+          })
+        );
+      } else {
+        this.data = [];
+      }
+      console.log(this.data,789);
+    }
   }
 };
 </script>
+<style>
+.break-word {
+  word-break: break-word;
+}
+</style>

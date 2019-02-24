@@ -229,7 +229,7 @@ class DataDriveService {
     } else {
       tableData.data = [];
     }
-    dataDrive.emitAfterDataInit(ds);
+    dataDrive.emitAfterDataInit(tableData.data);
   }
 
   updateData(dataDrive, ds) {

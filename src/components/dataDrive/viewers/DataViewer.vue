@@ -1,13 +1,17 @@
 <template>
 <div>
     <drive-table>
-        <template v-slot:action="{data}">
-            <slot name="action" :data="data"></slot>
+        <template v-slot:tableAction="{data}">
+            <slot name="tableAction" :data="data"></slot>
          </template>
 
-         <!-- <template v-slot:header="{property,value}">
-            {{value}}456{{property}}
-         </template> -->
+         <template v-slot:tableHeader="{property,value}">
+            <slot name="tableHeader" :property="property" :value="value"></slot>
+         </template>
+
+         <template v-slot:tableBody="{property,value, record}">
+            <slot name="tableBody" :property="property" :value="value" :record="record"></slot>
+         </template>
     </drive-table>
 </div>
 </template>

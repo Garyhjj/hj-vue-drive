@@ -5,9 +5,6 @@ import {
     BehaviorSubject
 } from 'rxjs';
 import {
-    tap
-} from 'rxjs/operators';
-import {
     replaceQuery,
     isArray
 } from '@/utils';

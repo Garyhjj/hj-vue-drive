@@ -11,7 +11,8 @@ import {
   Input,
   Select,
   Spin,
-  DatePicker,message,Table,Tag,Divider
+  DatePicker,message,Table,Tag,Divider,Modal,
+  Tooltip,Slider,Row,Col
 } from "ant-design-vue";
 import {
   BehaviorSubject
@@ -61,7 +62,7 @@ registerCom([Icon, Button, Menu, Menu.SubMenu,
   Layout.Footer, Layout.Content, Breadcrumb, Breadcrumb.Item,
   Form, Form.Item, Input, Select, Select.Option,Spin,DatePicker,
   DatePicker.WeekPickerker,DatePicker.MonthPicker,DatePicker.RangePicker,
-  Table,Tag,Divider
+  Table,Tag,Divider,Modal,Tooltip,Slider,Row,Col
 ]);
 
 

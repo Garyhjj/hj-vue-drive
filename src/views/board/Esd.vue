@@ -2,7 +2,19 @@
   <div>看板ESD
     <!-- <DyInput/> -->
     <!-- <DyUpdate :inputSet="inputs"></DyUpdate> -->
-    <data-drive  :name="'examQuestions'" @inited="dataDriveInit"></data-drive>
+    <data-drive  :name="'examQuestions'" @inited="dataDriveInit">
+      <!-- <template v-slot:tableHeader="{property,value}">
+            {{value}}666
+      </template> -->
+      <!-- <template v-slot:tableBody="{property,value, record}">
+            {{value}}222
+         </template> -->
+
+         <template v-slot:tableAction="{data}">
+            <a-divider type="vertical"/>
+        <a href="javascript:;" @click="testAction(data)">5555</a>
+        </template>
+    </data-drive>
   </div>
 </template>
 <script>
@@ -67,8 +79,10 @@ export default {
   methods: {
     dataDriveInit(d) {
       d.afterDataInit((data) => {
-        console.log(data,555)
       })
+    },
+    testAction(ds) {
+      console.log(ds);
     }
   }
 };

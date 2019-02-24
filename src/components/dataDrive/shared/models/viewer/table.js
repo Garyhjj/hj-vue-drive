@@ -72,19 +72,21 @@ export class TabelViewSet {
     if (opts) {
       Object.assign(this, opts);
     }
-    this.more = this.more || {};
-    this.more.title = this.more.title || { enable: true };
-    this.more.border_y = this.more.border_y || { enable: false };
-    this.more.pageSet = this.more.pageSet || { enable: true, count: 10 };
-    this.more.pageSet.count = this.more.pageSet.count || 10;
-    this.more.size = this.more.size || 'default';
-    this.more.footer = this.more.footer || { enable: false, content: '' };
+    const more = this.more = this.more || {};
+    more.title = more.title || { enable: true };
+    more.border_y = more.border_y || { enable: false };
+    more.pageSet = more.pageSet || { enable: true, count: 10 };
+    more.pageSet.count = more.pageSet.count || 10;
+    more.size = more.size || 'default';
+    more.footer = more.footer || { enable: false, content: '' };
     this.type = 'table';
     this.hasInited = true;
-    if (this.more.fixedHeader && this.more.fixedHeader.autoScroll) {
+    if (more.fixedHeader && more.fixedHeader.autoScroll) {
       this._scrollSet = true;
     }
     this._cbList = {};
+    this.changeBodyFontSize('14px');
+    this.changeHeaderFontSize('14px');
   }
 
   setForceUpdate(fn) {
